@@ -96,7 +96,7 @@ int main(int argc, char** argv)
     cout << "Elapsed duration " << duration.count() << " ms" << endl;
 
     cv::imshow("image", image);
-    cv::imshow("depth", depth);
+    //cv::imshow("depth", depth);
     cv::waitKey();
     return 0;
 }

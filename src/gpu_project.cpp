@@ -75,16 +75,27 @@ int main(int argc, char** argv)
     cudaMalloc((void **)&d_r,nsize*sizeof(float));
     cudaMalloc((void **)&d_rgba,nsize*sizeof(float));
 
-    int nblocks=1000, nthreads=32;
+    cudaMemcpy(d_x,h_x,nsize*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y,h_y,nsize*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z,h_z,nsize*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_nx,h_nx,nsize*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_ny,h_ny,nsize*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_nz,h_nz,nsize*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_r,h_r,nsize*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_rgba,h_rgba,nsize*sizeof(float),cudaMemcpyHostToDevice);
+
+    int nthreads=6*32;
+    int nblocks = std::ceil(double(nsize) / double(nthreads));
 
     auto start = std::chrono::system_clock::now();
 
-    //K.transpose();
-    //Kinv.transpose();
+    K.transposeInPlace();
+    Kinv.transposeInPlace();
 
     cout << K << endl;
-    project(d_x, d_y, d_z, d_nx, d_ny, d_nz, d_r, d_rgba, nblocks, nthreads, eps2, K.data(), Kinv.data(), (float*)image.data);
-
+    project(d_x, d_y, d_z, d_nx, d_ny, d_nz, d_r, d_rgba, nblocks, nthreads,
+            eps2, K.data(), Kinv.data(), (float*)image.data, nsize);
+    cudaMemcpy(h_x,d_x,nsize*sizeof(float),cudaMemcpyDeviceToHost);
     auto duration = std::chrono::duration_cast<TimeT>(std::chrono::system_clock::now() - start);
 
     cout << "Elapsed duration " << duration.count() << " ms" << endl;

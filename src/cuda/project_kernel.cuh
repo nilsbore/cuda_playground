@@ -5,6 +5,7 @@
 
 void project(float *d_x, float *d_y, float *d_z, float *d_nx,
              float *d_ny, float *d_nz, float *d_r, float *d_rgba,
-             int nblocks, int nthreads, float neps2, float* nK, float* nKinv, float* himage);
+             int nblocks, int nthreads, float neps2, float* nK, float* nKinv, float* himage,
+             int hnpoints);
 
 #endif // PROJECT_KERNEL_CUH
