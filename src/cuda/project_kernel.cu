@@ -38,7 +38,7 @@ __global__ void project_kernel(float *d_x, float *d_y, float *d_z, float *d_nx,
     float px = K[0][0]*d_x[i]/d_z[i] + K[0][2];
     float py = K[1][1]*d_y[i]/d_z[i] + K[1][2];
     if (px < 0 || px > 640 || py < 0 || py > 480) {
-        //return;
+        return;
     }
 
     float r2 = 1.0f/(d_r[i]*d_r[i]);
@@ -93,15 +93,27 @@ __global__ void project_kernel(float *d_x, float *d_y, float *d_z, float *d_nx,
         }
     }
 
-    // now, let's get the camera matrix in there
-    //Eigen::Vector3f c = s.getVector3fMap();
+    int minx = 640; int maxx = 0; int miny = 480; int maxy = 0;
+    float ox[4] = {d_r[i], -d_r[i], 0.0f, 0.0f};
+    float oy[4] = {0.0f, 0.0f, d_r[i], -d_r[i]};
 
-//    Eigen::Matrix3f AA = Kinv.transpose()*((c.transpose()*A*c - 1.0f)*A - A*c*c.transpose()*A)*Kinv;
-//    Eigen::Matrix2f A2 = AA.block<2, 2>(0, 0);
-//    Eigen::Vector2f B2 = 2.0f*AA.block<2, 1>(0, 2);
-//    float C2 = AA(2, 2);
-    int minx = max(int(px) - 5, 0); int maxx = min(int(px) + 5, 640); int miny = max(int(py) - 5, 0); int maxy = min(int(py) + 5, 480);
-    //int minx = 0; int maxx = 640; int miny = 0; int maxy = 480;
+    for (int col = 0; col < 4; ++col) {
+        px = K[0][0]*(d_x[i]+ox[col])/d_z[i] + K[0][2];
+        py = K[1][1]*(d_y[i]+oy[col])/d_z[i] + K[1][2];
+        if (px < minx) {
+            minx = px;
+        }
+        if (py < miny) {
+            miny = py;
+        }
+        if (px > maxx) {
+            maxx = px;
+        }
+        if (py > maxy) {
+            maxy = py;
+        }
+    }
+
     float x, y, disc;
     for (int row = miny; row < maxy; ++row) {
 
